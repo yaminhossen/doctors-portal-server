@@ -36,12 +36,16 @@ async function run() {
             const query = { date: date };
             const bookings = await bookinCollection.find(query).toArray();
 
-            // Step 3: for each service for that booking for that service
+            // Step 3: for each service 
             services.forEach(service => {
-                const serviceBookings = bookings.filter(b => b.treatment === service.name);
-                const booked = serviceBookings.map(s => s.slot);
-                const available = service.slots.filter(s => !booked.includes(s));
-                service.available = available;
+                // find the booking for that  services
+                const serviceBookings = bookings.filter(book => book.treatment === service.name);
+                // select slots for service Booking
+                const bookedSlots = serviceBookings.map(book => book.slot);
+                // select those slot that are not in bookedSlots
+                const available = service.slots.filter(slot => !bookedSlots.includes(slot));
+                // set available to slots to make it easier
+                service.slots = available;
             })
 
             res.send(services);
