@@ -19,6 +19,7 @@ async function run() {
         await client.connect();
         const serviceCollection = client.db('doctors_portal').collection('services');
         const bookinCollection = client.db('doctors_portal').collection('bookings');
+        console.log(bookinCollection);
 
         app.get('/service', async (req, res) => {
             const query = {};
@@ -26,6 +27,12 @@ async function run() {
             const services = await cursor.toArray();
             res.send(services);
         })
+        // app.get('/cooking', async (req, res) => {
+        //     const query = {};
+        //     const cursor = bookinCollection.find(query);
+        //     const services = await cursor.toArray();
+        //     res.send(services);
+        // })
 
         app.get('/available', async (req, res) => {
             const date = req.query.date || "May 14, 2022";
