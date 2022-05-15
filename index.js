@@ -1,7 +1,9 @@
 const express = require('express')
 const cors = require('cors');
+const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const { MongoClient, ServerApiVersion } = require('mongodb');
+const { get } = require('express/lib/response');
 const app = express()
 const port = process.env.PORT || 5000;
 
@@ -19,13 +21,26 @@ async function run() {
         await client.connect();
         const serviceCollection = client.db('doctors_portal').collection('services');
         const bookinCollection = client.db('doctors_portal').collection('bookings');
-        console.log(bookinCollection);
+        const userCollection = client.db('doctors_portal').collection('users');
 
         app.get('/service', async (req, res) => {
             const query = {};
             const cursor = serviceCollection.find(query);
             const services = await cursor.toArray();
             res.send(services);
+        })
+
+        app.put('/user/:email', async (req, res) => {
+            const email = req.params.email;
+            const user = req.body;
+            const filter = { email: email };
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: user,
+            };
+            const result = await userCollection.updateOne(filter, updateDoc, options);
+            const token = jwt.sign({ email: email }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
+            res.send({ result, token });
         })
         // app.get('/cooking', async (req, res) => {
         //     const query = {};
@@ -63,6 +78,7 @@ async function run() {
          * app.get('/booking') // get all booking in this convention or more than one
          * app.get('/booking/:id') // get a specific booking
          * app.post('/booking') // add a new booking
+         * app.put('/booking') // upsert  (if exist then update) == (else insert)
          * app.patch('/booking/:id') //update a specific booking
          * app.delete('/booking/:id') // delete specific one
          * */
